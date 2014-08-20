@@ -57,7 +57,7 @@ static void usage ( char * argv0, bool longversion ) {
    #ifndef HAVE_LIBGEOIP
    fprintf (stdout, "usage: %s [ --select | -s select-statement ] [ --port | -p httpportnumber ] [ --json | -j ] [ --csv | -c ] [ --table | -t ] [ --xml | -x ] [ --daemon | -d ] [ --webroot | -w webdir ] [ --pcaproot | -r pcapdir ] [ --help | -h ] [ --limit | -l ] [ --maxconn | -m ] pcapfile(s)...\n", argv0);
    #else
-   fprintf (stdout, "usage: %s [ --select | -s select-statement ] [ --port | -p httpportnumber ] [ --json | -j ] [ --csv | -c ] [ --table | -t ] [ --xml | -x ] [ --daemon | -d ] [ --webroot | -w webdir ] [ --pcaproot | -r pcapdir ] [ --help | -h ] [ --limit | -l ] [ --maxconn | -m ] [ --geoipfilev4 | -g datafile] [ --geoipfilev6 | -G datafile] pcapfile(s)...\n", argv0);
+   fprintf (stdout, "usage: %s [ --select | -s select-statement ] [ --port | -p httpportnumber ] [ --json | -j ] [ --csv | -c ] [ --table | -t ] [ --xml | -x ] [ --daemon | -d ] [ --webroot | -w webdir ] [ --pcaproot | -r pcapdir ] [ --help | -h ] [ --limit | -l ] [ --maxconn | -m ] [ --geoipdir | -g geopdir]  pcapfile(s)...\n", argv0);
    #endif
    if (!longversion)
        return;
@@ -158,7 +158,7 @@ int main (int argc, char * argv [])
     int max_conn= 7;
     bool daemon = false;
     #ifdef HAVE_LIBGEOIP
-    std::string geoipfile_v4="", geoipfile_v6="";
+    std::string geoipdir = "/usr/share/GeoIP/";
     #endif
 
     init_packet_handlers();  // set up tables
@@ -186,16 +186,15 @@ int main (int argc, char * argv [])
 	    {"help",	0, 0, 'h'},
 	    {"version", 0, 0, 'v'},
         #ifdef HAVE_LIBGEOIP
-        {"geoipfilev4", 1, 0, 'g'},
-        {"geoipfilev6", 1, 0, 'G'},
+        {"geoipdir", 1, 0, 'g'},
         #endif
 	    {NULL,  0, 0, 0}
 	};
 
     #ifndef HAVE_LIBGEOIP
     int c = getopt_long (argc, argv, "w:r:s:l:p:hHdvcxtjm:", long_options, &option_index);
-    #else 
-	int c = getopt_long (argc, argv, "w:r:s:l:p:g:G:hHdvcxtjm:", long_options, &option_index);
+    #else
+	int c = getopt_long (argc, argv, "w:r:s:l:p:g:hHdvcxtjm:", long_options, &option_index);
     #endif
 	if (c == -1)
 	    break;
@@ -246,10 +245,7 @@ int main (int argc, char * argv [])
 		break;
         #ifdef HAVE_LIBGEOIP
         case 'g':
-        init_geoip_v4(optarg);
-        break;
-        case 'G':
-        init_geoip_v6(optarg);
+        geoipdir = optarg;
         break;
         #endif
 	    default:
@@ -261,6 +257,11 @@ int main (int argc, char * argv [])
 		return 1;
 	}
     }
+        
+    #ifdef HAVE_LIBGEOIP
+    init_geoip(geoipdir);
+    #endif
+
     g_app->set_limit(limit);
     if (port>0)
     {

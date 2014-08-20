@@ -2053,6 +2053,12 @@ OP* OP::compile(const std::vector<Table *> &tables, const std::vector<int> &sear
             m_t = Coltype::_text;
             ret = new Aslookup_Func(*this);
         }
+
+        if (cmpi(get_token(),"cclookup"))
+        {
+            m_t = Coltype::_text;
+            ret = new Cclookup_func(*this);
+        }
 #endif
         if (cmpi(get_token(),"trim") )
         {

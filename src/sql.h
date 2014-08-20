@@ -852,6 +852,23 @@ public:
         v = *q;
     }
 };
+
+class Cclookup_func : public OP
+{
+public:
+    Cclookup_func(const OP &op): OP(op)
+    {
+    }
+    void evaluate(Row **rows, Variant &v)
+    {
+        Variant str;
+        m_param[0]->evaluate(rows, str);
+        RefCountStringHandle lookup(str.get_text());
+        RefCountString *p = RefCountString::construct(lookup_cc((*lookup)->data));
+        RefCountStringHandle q(p);
+        v = *q;
+    }
+};
 #endif
 
 class Lower_func : public OP
